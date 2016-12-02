@@ -2,6 +2,7 @@ parameters:
   _param:
     primary_interface: eth0
     tenant_interface: eth1
+    ovs_bridge: br-floating
     interface_mtu: 9000
   linux:
     network:
@@ -27,7 +28,8 @@ parameters:
           bond-miimon: 100
           proto: manual
           bond-slaves: ${_param:primary_interface} ${_param:tenant_interface}
-        br0:
+        ovs_bridge: 
+          name: ${_param:ovs_bridge} 
           enabled: true
           mtu: ${_param:interface_mtu}
           type: ovs_bridge
@@ -35,7 +37,7 @@ parameters:
         br-mgmt:
           enabled: true
           type: ovs_port
-          bridge: br0
+          bridge: ${_param:ovs_bridge} 
           proto: static
           address: ${_param:single_address}
           netmask: 255.255.255.0
@@ -44,6 +46,6 @@ parameters:
           type: ovs_port
           ovs_options: tag=
           proto: static
-          bridge: br0
+          bridge: ${_param:ovs_bridge} 
           address: ${_param:tenant_address}
           netmask: 255.255.255.0
