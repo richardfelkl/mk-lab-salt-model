@@ -1,8 +1,7 @@
 parameters:
   _param:
-    primary_interface: eth1
-    tenant_interface: eth2
-    external_interface: eth3
+    primary_interface: eth0
+    tenant_interface: eth1
     interface_mtu: 9000
   linux:
     network:
@@ -12,56 +11,39 @@ parameters:
           enabled: true
           name: ${_param:primary_interface}
           type: eth
+          bond-master: bond0
           mtu: ${_param:interface_mtu}
           proto: manual
         tenant_interface:
           enabled: true
           name: ${_param:tenant_interface}
           type: eth
+          bond-master: bond0
           mtu: ${_param:interface_mtu}
           proto: manual
-        external_interface:
+        bond0:
           enabled: true
-          name: ${_param:external_interface}
-          type: eth
-          mtu: ${_param:interface_mtu}
+          bond-mode: 1
+          bond-miimon: 100
           proto: manual
-        br-int:
+          bond-slaves: ${_param:primary_interface} ${_param:tenant_interface}
+        br0:
           enabled: true
           mtu: ${_param:interface_mtu}
           type: ovs_bridge
-        br-floating:
-          enabled: true
-          mtu: ${_param:interface_mtu}
-          type: ovs_bridge
-        float-to-ex:
-          enabled: true
-          type: ovs_port
-          mtu: 65000
-          bridge: br-floating
+          proto: manual
         br-mgmt:
           enabled: true
-          type: bridge
-          mtu: ${_param:interface_mtu}
+          type: ovs_port
+          bridge: br0
+          proto: static
           address: ${_param:single_address}
           netmask: 255.255.255.0
-          use_interfaces:
-          - ${_param:primary_interface}
         br-mesh:
           enabled: true
-          type: bridge
-          mtu: ${_param:interface_mtu}
+          type: ovs_port
+          ovs_options: tag=
+          proto: static
+          bridge: br0
           address: ${_param:tenant_address}
           netmask: 255.255.255.0
-          use_interfaces:
-          - ${_param:tenant_interface}
-        br-ex:
-          enabled: true
-          type: bridge
-          mtu: ${_param:interface_mtu}
-          address: ${_param:external_address}
-          netmask: 255.255.255.0
-          use_interfaces:
-          - ${_param:external_interface}
-          use_ovs_ports:
-          - float-to-ex
